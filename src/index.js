@@ -1,0 +1,3 @@
+const obt = {
+	name: '',
+}
