@@ -2,6 +2,39 @@ const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { PROJECT_PATH, isDev } = require('../constants')
 
+const getCssLoaders = (importLoaders) => [
+	'style-loader',
+	{
+		loader: 'css-loader',
+		options: {
+			modules: false,
+			sourceMap: isDev,
+			importLoaders,
+		},
+	},
+	{
+		loader: 'postcss-loader',
+		options: {
+			postcssOptions: {
+				ident: 'postcss',
+				plugins: [
+					// 修复一些和 flex 布局相关的 bug
+					require('postcss-flexbugs-fixes'),
+					require('postcss-preset-env')({
+						autoprefixer: {
+							grid: true,
+							flexbox: 'no-2009',
+						},
+						stage: 3,
+					}),
+					require('postcss-normalize'),
+				],
+			},
+			sourceMap: isDev,
+		},
+	},
+]
+
 module.exports = {
 	entry: {
 		app: path.resolve(PROJECT_PATH, './src/app.js'),
@@ -37,14 +70,28 @@ module.exports = {
 		rules: [
 			{
 				test: /\.css$/,
+				use: getCssLoaders(1),
+			},
+			{
+				test: /\.less$/,
 				use: [
-					'style-loader',
+					...getCssLoaders(2),
 					{
-						loader: 'css-loader',
+						loader: 'less-loader',
 						options: {
-							modules: false, // 默认就是 false, 若要开启，可在官网具体查看可配置项
-							sourceMap: isDev, // 开启后与 devtool 设置一致, 开发环境开启，生产环境关闭
-							importLoaders: 0, // 指定在 CSS loader 处理前使用的 laoder 数量
+							sourceMap: isDev,
+						},
+					},
+				],
+			},
+			{
+				test: /\.scss$/,
+				use: [
+					...getCssLoaders(2),
+					{
+						loader: 'sass-loader',
+						options: {
+							sourceMap: isDev,
 						},
 					},
 				],
